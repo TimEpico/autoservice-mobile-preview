@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="ru">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>AutoService — Мои автомобили</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="theme-color" content="#132139">
+<style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font: 16px/1.5 system-ui;
+      color: #141f32;
+      background: #fafbfc;
+    }
+    header {
+      background: #132139;
+      color: white;
+      padding: 17px max(5vw, calc((100vw - 880px) / 2));
+      font-weight: 800;
+      font-style: italic;
+      font-size: 22px;
+    }
+    header b {
+      color: #ff851f;
+      margin-right: 8px;
+    }
+    main {
+      max-width: 920px;
+      margin: auto;
+      padding: 32px 20px;
+    }
+    section,
+    .head,
+    nav,
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    h1 {
+      font-size: clamp(26px, 4vw, 40px);
+      letter-spacing: -0.055em;
+      margin: 0;
+    }
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+    button,
+    select {
+      cursor: pointer;
+    }
+    button {
+      min-height: 44px;
+      background: white;
+      color: #16243b;
+      border: 1px solid #a9b2bf;
+      border-radius: 8px;
+      padding: 8px 15px;
+      font-weight: 650;
+    }
+    button:hover {
+      filter: brightness(0.94);
+    }
+    :focus-visible {
+      outline: 3px solid #3589df;
+      outline-offset: 2px;
+    }
+    .dash {
+      margin: 20px 0;
+      background: #15243c;
+      color: white;
+      border-radius: 15px;
+      padding: clamp(20px, 5vw, 40px);
+    }
+    select {
+      max-width: 100%;
+      color: white;
+      background: #15243c;
+      border: 1px solid #8392a8;
+      border-radius: 6px;
+      padding: 7px;
+    }
+    .km {
+      display: block;
+      font-size: clamp(36px, 8vw, 62px);
+      letter-spacing: -0.045em;
+    }
+    .ruler {
+      height: 14px;
+      margin: 12px 0;
+      background: repeating-linear-gradient(
+        90deg,
+        #99aac0 0 2px,
+        transparent 2px 15px
+      );
+      border-left: 5px solid #ff851f;
+    }
+    .primary {
+      background: #ff871e;
+      border-color: #ff871e;
+      color: #131e30;
+    }
+    nav {
+      justify-content: flex-start;
+      border-bottom: 1px solid #cbd1d9;
+    }
+    nav button {
+      background: none;
+      border: 0;
+      border-radius: 0;
+      color: #5b6575;
+    }
+    nav button[aria-pressed="true"] {
+      border-bottom: 3px solid #ef780b;
+      color: #132139;
+    }
+    .row {
+      width: 100%;
+      text-align: left;
+      border: 0;
+      border-bottom: 1px solid #dce1e7;
+      border-radius: 0;
+      padding: 18px 10px;
+    }
+    .row span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    small {
+      display: block;
+      font-weight: 400;
+      color: #566173;
+    }
+    .flag {
+      color: #973b00;
+      font-weight: 650;
+    }
+    #addTask {
+      width: 100%;
+      margin-top: 18px;
+    }
+    dialog {
+      width: min(440px, 94vw);
+      border: 0;
+      border-radius: 14px;
+      padding: 24px;
+      color: #15243c;
+      max-height: 90dvh;
+    }
+    dialog::backdrop {
+      background: #111d31aa;
+    }
+    h2 {
+      line-height: 1.2;
+      margin-top: 0;
+    }
+    label {
+      display: block;
+      margin: 12px 0;
+    }
+    input {
+      display: block;
+      width: 100%;
+      border: 1px solid #aab3bf;
+      border-radius: 6px;
+      padding: 9px;
+    }
+    footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    #notice {
+      color: #933b00;
+    }
+    #notice:empty {
+      display: none;
+    }
+    @media (max-width: 500px) {
+      main {
+        padding: 20px 14px;
+      }
+      .head {
+        flex-wrap: wrap;
+      }
+      .dash section {
+        display: block;
+      }
+      .dash button {
+        width: 100%;
+        margin-top: 10px;
+      }
+    }
+  </style>
+  <header><b>///</b> AutoService</header>
+  <main>
+    <div class="head">
+      <h1>Мои автомобили</h1>
+      <button id="addCar">+ Автомобиль</button>
+    </div>
+    <div class="dash">
+      <select id="cars" aria-label="Выбрать автомобиль"></select>
+      <section>
+        <div>
+          <strong class="km" id="mileage"></strong><span id="updated"></span>
+        </div>
+        <button id="editKm" class="primary">Обновить пробег</button>
+      </section>
+      <div class="ruler"></div>
+    </div>
+    <nav aria-label="Записи автомобиля">
+      <button id="planned">Предстоящие работы</button
+      ><button id="history">История</button>
+    </nav>
+    <div id="list"></div>
+    <button id="addTask">+ Задача</button>
+    <p id="notice" role="alert"></p>
+  </main>
+  <dialog id="modal">
+    <form id="form">
+      <h2 id="title"></h2>
+      <div id="fields"></div>
+      <p id="error" role="alert"></p>
+      <footer>
+        <button type="button" id="cancel">Отмена</button
+        ><button class="primary" id="save">Сохранить</button>
+      </footer>
+    </form>
+  </dialog>
+  <script>
+    "use strict";
+    const $ = (id) => document.getElementById(id);
+    const today = () => {
+      const d = new Date();
+      return new Date(d - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 10);
+    };
+    const number = (n) => n.toLocaleString("ru-RU");
+    const key = "autoservice.journal.v1";
+    let data = [
+      {
+        name: "Toyota Corolla",
+        km: 59000,
+        date: today(),
+        tasks: [
+          {
+            name: "Замена масла и фильтра",
+            km: 60000,
+            delta: 500,
+            date: "",
+            days: 7,
+          },
+        ],
+      },
+    ];
+    let index = 0,
+      past = false;
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored) data = JSON.parse(stored);
+    } catch {
+      $("notice").textContent = "Не удалось прочитать сохранённый журнал.";
+    }
+    function due(task, car, date) {
+      const distances = [];
+      if (task.km !== null) {
+        const left = task.km - car.km;
+        distances.push({
+          text:
+            left <= 0
+              ? "Пора на ТО по пробегу"
+              : "Через " + number(left) + " км",
+          alert: left <= task.delta,
+        });
+      }
+      if (task.date) {
+        const left = (Date.parse(task.date) - Date.parse(date)) / 86400000;
+        distances.push({
+          text:
+            left <= 0
+              ? "Наступила дата ТО"
+              : "ТО " + task.date.split("-").reverse().join("."),
+          alert: left <= task.days,
+        });
+      }
+      return distances;
+    }
+    console.assert(
+      due({ km: 60000, delta: 500, date: "" }, { km: 59500 }, today())[0].alert,
+    );
+    function render() {
+      const car = data[index];
+      $("cars").replaceChildren(...data.map((c, i) => new Option(c.name, i)));
+      $("cars").value = index;
+      $("mileage").textContent = number(car.km) + " км";
+      $("updated").textContent =
+        "Пробег на " + car.date.split("-").reverse().join(".");
+      $("planned").setAttribute("aria-pressed", !past);
+      $("history").setAttribute("aria-pressed", past);
+      const list = $("list");
+      list.replaceChildren();
+      const tasks = car.tasks.filter((t) => Boolean(t.done) === past);
+      if (past) tasks.sort((a, b) => b.done.localeCompare(a.done));
+      for (const t of tasks) {
+        const row = document.createElement(past ? "div" : "button");
+        row.className = "row";
+        const box = document.createElement("span");
+        box.textContent = t.name;
+        const sub = document.createElement("small");
+        box.append(sub);
+        row.append(box);
+        if (past)
+          sub.textContent =
+            t.done.split("-").reverse().join(".") +
+            " · " +
+            number(t.actual) +
+            " км";
+        else {
+          const status = due(t, car, today());
+          sub.textContent = status.map((x) => x.text).join(" · ");
+          if (status.some((x) => x.alert)) {
+            sub.className = "flag";
+            sub.textContent = "Напоминание · " + sub.textContent;
+          }
+          row.append("›");
+          row.onclick = () => complete(t);
+        }
+        list.append(row);
+      }
+      if (!tasks.length)
+        list.textContent = past
+          ? "История пока пуста."
+          : "Предстоящих работ пока нет.";
+    }
+    function openForm(title, markup, apply, action = "Сохранить") {
+      $("title").textContent = title;
+      $("fields").innerHTML = markup;
+      $("error").textContent = "";
+      $("save").textContent = action;
+      $("form").onsubmit = (e) => {
+        e.preventDefault();
+        const old = JSON.stringify(data),
+          previous = index;
+        try {
+          apply(new FormData(e.target));
+          localStorage.setItem(key, JSON.stringify(data));
+          $("modal").close();
+          render();
+        } catch (err) {
+          data = JSON.parse(old);
+          index = previous;
+          $("error").textContent = err.message;
+        }
+      };
+      $("modal").showModal();
+    }
+    function field(label, name, type, attrs = "") {
+      return (
+        "<label>" +
+        label +
+        '<input name="' +
+        name +
+        '" type="' +
+        type +
+        '" ' +
+        attrs +
+        "></label>"
+      );
+    }
+    const kmField = (label = "Пробег, км", min = 0) =>
+      field(
+        label,
+        "km",
+        "number",
+        'required min="' + min + '" max="99999999" step="1"',
+      );
+    function nameOf(f) {
+      const v = f.get("name").trim();
+      if (!v) throw Error("Введите название.");
+      return v;
+    }
+    $("addCar").onclick = () =>
+      openForm(
+        "Добавить автомобиль",
+        field("Марка и модель", "name", "text", 'required maxlength="80"') +
+          kmField(),
+        (f) => {
+          data.push({
+            name: nameOf(f),
+            km: Number(f.get("km")),
+            date: today(),
+            tasks: [],
+          });
+          index = data.length - 1;
+          past = false;
+        },
+      );
+    $("editKm").onclick = () =>
+      openForm(
+        "Обновить пробег",
+        kmField("Новый пробег, км", data[index].km),
+        (f) => {
+          Object.assign(data[index], {
+            km: Number(f.get("km")),
+            date: today(),
+          });
+        },
+      );
+    $("addTask").onclick = () =>
+      openForm(
+        "Новая задача",
+        field("Работа", "name", "text", 'required maxlength="120"') +
+          field(
+            "Целевой пробег, км",
+            "km",
+            "number",
+            'min="0" max="99999999"',
+          ) +
+          field("Дата ТО", "date", "date") +
+          field(
+            "Напомнить за сколько км",
+            "delta",
+            "number",
+            'required value="500" min="0"',
+          ) +
+          field(
+            "Напомнить за сколько дней",
+            "days",
+            "number",
+            'required value="7" min="0"',
+          ),
+        (f) => {
+          if (!f.get("km") && !f.get("date"))
+            throw Error("Укажите пробег или дату ТО.");
+          data[index].tasks.unshift({
+            name: nameOf(f),
+            km: f.get("km") === "" ? null : Number(f.get("km")),
+            date: f.get("date"),
+            delta: Number(f.get("delta")),
+            days: Number(f.get("days")),
+          });
+          past = false;
+        },
+      );
+    function complete(t) {
+      openForm(
+        t.name,
+        field(
+          "Дата выполнения",
+          "date",
+          "date",
+          'required max="' + today() + '" value="' + today() + '"',
+        ) +
+          field(
+            "Фактический пробег, км",
+            "km",
+            "number",
+            'required min="0" max="99999999" value="' + data[index].km + '"',
+          ),
+        (f) => {
+          const car = data[index],
+            task = car.tasks.find((x) => x === t) || car.tasks[taskIndex];
+          task.done = f.get("date");
+          task.actual = Number(f.get("km"));
+          if (task.actual > car.km) {
+            car.km = task.actual;
+            car.date = task.done;
+          }
+          past = true;
+        },
+        "Выполнено",
+      );
+      const taskIndex = data[index].tasks.indexOf(t);
+    }
+    $("cars").onchange = (e) => {
+      index = Number(e.target.value);
+      render();
+    };
+    $("planned").onclick = () => {
+      past = false;
+      render();
+    };
+    $("history").onclick = () => {
+      past = true;
+      render();
+    };
+    $("cancel").onclick = () => $("modal").close();
+    render();
+    setInterval(() => {
+      if (!$("modal").open) render();
+    }, 60000);
+  </script>
+</html>
