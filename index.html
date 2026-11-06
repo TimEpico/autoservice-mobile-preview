@@ -4,10 +4,10 @@
     name="viewport"
     content="width=device-width,initial-scale=1"
   /><title>AutoService — Мои автомобили</title>
-  <link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="./icon-192.png">
-<meta name="theme-color" content="#132139">
-<style>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <meta name="theme-color" content="#132139" />
+  <style>
     * {
       box-sizing: border-box;
     }
@@ -223,6 +223,20 @@
     </nav>
     <div id="list"></div>
     <button id="addTask">+ Задача</button>
+    <details style="margin-top: 20px">
+      <summary style="cursor: pointer; padding: 10px 0">
+        Push-уведомления
+      </summary>
+      <p>
+        Получайте напоминания о ТО, когда журнал закрыт. При включении сервису
+        передаются подписка устройства, названия запланированных работ и сроки
+        напоминаний.
+      </p>
+      <button id="enablePush">Включить уведомления</button>
+      <button id="testPush" hidden>Тест через 10 секунд</button>
+      <button id="offPush" hidden>Отключить</button>
+      <p id="pushStatus" role="status"></p>
+    </details>
     <p id="notice" role="alert"></p>
   </main>
   <dialog id="modal">
@@ -356,6 +370,7 @@
           localStorage.setItem(key, JSON.stringify(data));
           $("modal").close();
           render();
+          queuePushSync();
         } catch (err) {
           data = JSON.parse(old);
           index = previous;
@@ -500,4 +515,5 @@
       if (!$("modal").open) render();
     }, 60000);
   </script>
+  <script src="./push.js"></script>
 </html>
